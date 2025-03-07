@@ -1,0 +1,116 @@
+{
+    "info": {
+        "_postman_id": "3aa6bc58-5b11-4aee-addd-58c776d2faef",
+        "name": "pizzas",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "description": ""
+    },
+    "item": [
+        {
+            "name": "Deletar pizza",
+            "request": {
+                "method": "DELETE",
+                "url": {
+                    "raw": "http://localhost:8080/pizzas/1",
+                    "path": [
+                        "pizzas",
+                        "1"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8080"
+                }
+            }
+        },
+        {
+            "name": "Obter pizza",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8080/pizzas/2",
+                    "path": [
+                        "pizzas",
+                        "2"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8080"
+                }
+            }
+        },
+        {
+            "name": "listar pizzas",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "http://localhost:8080/pizzas",
+                    "path": [
+                        "pizzas"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8080"
+                }
+            }
+        },
+        {
+            "name": "criar pizza",
+            "request": {
+                "method": "POST",
+                "url": {
+                    "raw": "http://localhost:8080/pizzas",
+                    "path": [
+                        "pizzas"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8080"
+                },
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\n   \"id\": 4,\n    \"nome\": \"margerita\",\n    \"preco\": 10\n}"
+                }
+            }
+        },
+        {
+            "name": "atualizar pizza",
+            "request": {
+                "method": "PUT",
+                "url": {
+                    "raw": "http://localhost:8080/pizzas/20s",
+                    "path": [
+                        "pizzas",
+                        "20s"
+                    ],
+                    "protocol": "http",
+                    "host": [
+                        "localhost"
+                    ],
+                    "port": "8080"
+                },
+                "body": {
+                    "mode": "raw",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    },
+                    "raw": "{\n  \"nome\": \"Margerita\",\n  \"preco\": 10\n}"
+                }
+            }
+        }
+    ]
+}
