@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jaswdr/faker/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -11,6 +12,7 @@ var (
 	name     = "Campaign"
 	content  = "Body hi!"
 	contacts = []string{"email@email.com"}
+	fake     = faker.New()
 )
 
 func Test_NewCampaign(t *testing.T) {
@@ -34,26 +36,11 @@ func Test_NewCampaign_CreatedMustBeNowOrAfter(t *testing.T) {
 	assert.NotNil(campaign.CreatedAt)
 	assert.GreaterOrEqual(campaign.CreatedAt, now)
 }
-func Test_NewCampaign_MustValidateName(t *testing.T) {
-	assert := assert.New(t)
 
-	_, err := NewCampaign("", content, contacts)
-
-	assert.NotNil(err)
-	assert.Contains(err.Error(), "Name")
-}
-func Test_NewCampaign_MustValidateContent(t *testing.T) {
-	assert := assert.New(t)
-
-	_, err := NewCampaign(name, "", contacts)
-
-	assert.NotNil(err)
-	assert.Contains(err.Error(), "Content")
-}
 func Test_NewCampaign_MustValidateNameMin(t *testing.T) {
 	assert := assert.New(t)
 
-	_, err := NewCampaign("abcd", content, contacts)
+	_, err := NewCampaign(fake.Lorem().Text(3), content, contacts)
 
 	assert.NotNil(err)
 	assert.Contains(err.Error(), "Name")
@@ -61,7 +48,7 @@ func Test_NewCampaign_MustValidateNameMin(t *testing.T) {
 func Test_NewCampaign_MustValidateNameMax(t *testing.T) {
 	assert := assert.New(t)
 
-	_, err := NewCampaign("abcdefghijabcdefghija", content, contacts)
+	_, err := NewCampaign(fake.Lorem().Text(30), content, contacts)
 
 	assert.NotNil(err)
 	assert.Contains(err.Error(), "Name")
@@ -69,7 +56,7 @@ func Test_NewCampaign_MustValidateNameMax(t *testing.T) {
 func Test_NewCampaign_MustValidateContentMin(t *testing.T) {
 	assert := assert.New(t)
 
-	_, err := NewCampaign(name, "abcd", contacts)
+	_, err := NewCampaign(name, fake.Lorem().Text(3), contacts)
 
 	assert.NotNil(err)
 	assert.Contains(err.Error(), "Content")
@@ -77,12 +64,7 @@ func Test_NewCampaign_MustValidateContentMin(t *testing.T) {
 func Test_NewCampaign_MustValidateContentMax(t *testing.T) {
 	assert := assert.New(t)
 
-	contentMax := ""
-	for i := 0; i < 1025; i++ {
-		contentMax += "a"
-	}
-
-	_, err := NewCampaign(name, contentMax, contacts)
+	_, err := NewCampaign(name, fake.Lorem().Text(1030), contacts)
 
 	assert.NotNil(err)
 	assert.Contains(err.Error(), "Content")
@@ -94,4 +76,19 @@ func Test_NewCampaign_MustValidateContacts(t *testing.T) {
 
 	assert.NotNil(err)
 	assert.Contains(err.Error(), "Contacts")
+}
+func Test_NewCampaign_MustValidateInValidContacts(t *testing.T) {
+	assert := assert.New(t)
+
+	_, err := NewCampaign(name, content, []string{"invalid.com"})
+
+	assert.NotNil(err)
+	assert.Contains(err.Error(), "Contacts")
+}
+func Test_NewCampaign_MustValidateValidContacts(t *testing.T) {
+	assert := assert.New(t)
+
+	_, err := NewCampaign(name, content, []string{"valid@email.com"})
+
+	assert.Nil(err)
 }
