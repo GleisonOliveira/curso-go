@@ -1,8 +1,9 @@
 package routes
 
 import (
-	"emailn/cmd/api/helpers"
-	"net/http"
+	"emailn/cmd/api/handlers/campaign"
+	"emailn/cmd/api/middlewares"
+	"emailn/internal/contract/dto"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,34 +14,5 @@ type product struct {
 }
 
 func RegisterRoutes(r *gin.Engine) {
-	r.GET("/", func(c *gin.Context) {
-		product := c.Query("product")
-
-		if product == "" {
-			c.String(http.StatusOK, "Hello world")
-
-			return
-		}
-
-		c.String(http.StatusOK, product)
-	})
-
-	r.GET("/:name", func(c *gin.Context) {
-		name := c.Param("name")
-
-		c.JSON(http.StatusOK, gin.H{
-			"name": name,
-		})
-	})
-
-	r.POST("/products", func(c *gin.Context) {
-		var product product
-
-		if err := c.ShouldBindJSON(&product); err != nil {
-			c.JSON(http.StatusBadRequest, helpers.ValidationErrors(err))
-			return
-		}
-
-		c.JSON(http.StatusOK, product)
-	})
+	r.POST("/campaigns", middlewares.ValidatorJSON[dto.NewCampaign](), campaign.Handle)
 }
