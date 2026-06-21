@@ -5,26 +5,36 @@ import (
 	"emailn/internal/internalerrors"
 )
 
-type service struct {
-	Repository Repository
+type Service struct {
+	repository Repository
 }
 
-func NewService(repository Repository) *service {
-	return &service{Repository: repository}
+func NewService(repository Repository) *Service {
+	return &Service{repository: repository}
 }
 
-func (s *service) Create(newCampaign dto.NewCampaign) (*Campaign, error) {
+func (s *Service) Create(newCampaign dto.NewCampaign) (*Campaign, error) {
 	campaign, err := NewCampaign(newCampaign.Name, newCampaign.Content, newCampaign.Emails)
 
 	if err != nil {
 		return nil, err
 	}
 
-	err = s.Repository.Save(campaign)
+	err = s.repository.Save(campaign)
 
 	if err != nil {
 		return nil, internalerrors.ErrInternal
 	}
 
 	return campaign, nil
+}
+
+func (s *Service) Get() (*[]Campaign, error) {
+	campaigns, err := s.repository.Get()
+
+	if err != nil {
+		return nil, internalerrors.ErrInternal
+	}
+
+	return campaigns, nil
 }

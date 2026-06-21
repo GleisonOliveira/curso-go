@@ -12,11 +12,11 @@ type Contact struct {
 }
 
 type Campaign struct {
-	Id        uuid.UUID `validate:"required"`
-	Name      string    `validate:"min=5,max=20"`
-	CreatedAt time.Time `validate:"required"`
-	Content   string    `validate:"min=5,max=1024"`
-	Contacts  []Contact `validate:"min=1,dive"`
+	Id        uuid.UUID `validate:"required" json:"id"`
+	Name      string    `validate:"min=5,max=20" json:"name"`
+	CreatedAt time.Time `validate:"required" json:"created_at"`
+	Content   string    `validate:"min=5,max=1024" json:"content"`
+	Contacts  []Contact `validate:"min=1,dive" json:"contacts"`
 }
 
 func NewCampaign(name string, content string, emails []string) (*Campaign, error) {
