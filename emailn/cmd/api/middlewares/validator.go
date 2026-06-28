@@ -20,3 +20,17 @@ func ValidatorJSON[T any]() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+func ValidatorURI[T any]() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var req T
+
+		if err := c.ShouldBindUri(&req); err != nil {
+			c.AbortWithStatusJSON(http.StatusUnprocessableEntity, helpers.ValidationErrors(err))
+			return
+		}
+
+		c.Set("path", req)
+		c.Next()
+	}
+}

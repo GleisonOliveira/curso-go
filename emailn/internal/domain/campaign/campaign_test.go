@@ -23,8 +23,8 @@ func Test_NewCampaign(t *testing.T) {
 	assert.NotNil(campaign.Id)
 	assert.Equal(name, campaign.Name)
 	assert.Equal(content, campaign.Content)
-	assert.Len(campaign.Contacts, len(contacts))
-	assert.Equal("email@email.com", campaign.Contacts[0].Email)
+	assert.Len((*campaign.Contacts), len(contacts))
+	assert.Equal("email@email.com", (*campaign.Contacts)[0].Email)
 }
 
 func Test_NewCampaign_CreatedMustBeNowOrAfter(t *testing.T) {
@@ -91,4 +91,11 @@ func Test_NewCampaign_MustValidateValidContacts(t *testing.T) {
 	_, err := NewCampaign(name, content, []string{"valid@email.com"})
 
 	assert.Nil(err)
+}
+func Test_NewCampaign_MustBePendingStatus(t *testing.T) {
+	assert := assert.New(t)
+
+	campaign, _ := NewCampaign(name, content, []string{"valid@email.com"})
+
+	assert.Equal(StatusPending, campaign.Status)
 }

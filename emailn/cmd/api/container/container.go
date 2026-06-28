@@ -7,8 +7,8 @@ import (
 
 type Container struct {
 	CampaignRepository campaign.Repository
-	CampaignService    campaign.Service
-	CampaignHandler    campaign.Handler
+	CampaignService    *campaign.Service
+	CampaignHandler    *campaign.Handler
 }
 
 func NewContainer() *Container {
@@ -23,7 +23,7 @@ func NewContainer() *Container {
 
 	return &Container{
 		CampaignRepository: campaignRepository,
-		CampaignService:    *campaignService,
-		CampaignHandler:    *campaignHandler,
+		CampaignService:    campaignService,
+		CampaignHandler:    campaignHandler,
 	}
 }

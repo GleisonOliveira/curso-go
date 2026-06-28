@@ -7,16 +7,25 @@ import (
 	"github.com/google/uuid"
 )
 
+type Status string
+
 type Contact struct {
 	Email string `validate:"email"`
 }
 
+const (
+	StatusPending  Status = "pending"
+	StatusApproved Status = "approved"
+	StatusRejected Status = "rejected"
+)
+
 type Campaign struct {
-	Id        uuid.UUID `validate:"required" json:"id"`
-	Name      string    `validate:"min=5,max=20" json:"name"`
-	CreatedAt time.Time `validate:"required" json:"created_at"`
-	Content   string    `validate:"min=5,max=1024" json:"content"`
-	Contacts  []Contact `validate:"min=1,dive" json:"contacts"`
+	Id        uuid.UUID  `validate:"required" json:"id"`
+	Name      string     `validate:"min=5,max=20" json:"name"`
+	CreatedAt time.Time  `validate:"required" json:"created_at"`
+	Content   string     `validate:"min=5,max=1024" json:"content"`
+	Contacts  *[]Contact `validate:"min=1,dive" json:"contacts"`
+	Status    Status
 }
 
 func NewCampaign(name string, content string, emails []string) (*Campaign, error) {
@@ -31,7 +40,8 @@ func NewCampaign(name string, content string, emails []string) (*Campaign, error
 		Name:      name,
 		Content:   content,
 		CreatedAt: time.Now(),
-		Contacts:  contacts,
+		Contacts:  &contacts,
+		Status:    StatusPending,
 	}
 
 	err := internalerrors.ValidateStruct(campaign)

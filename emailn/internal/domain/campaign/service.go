@@ -1,19 +1,29 @@
 package campaign
 
 import (
-	"emailn/internal/contract/dto"
 	"emailn/internal/internalerrors"
+
+	"github.com/google/uuid"
 )
+
+type ServiceInterface interface {
+	Create(newCampaign *CreateCampaignRequest) (*CampaignResponse, error)
+	Get() (*[]CampaignResponse, error)
+	Show(uuid.UUID) (*CampaignResponse, error)
+}
 
 type Service struct {
 	repository Repository
 }
 
+// verificação em tempo de compilação: garante que *Service implementa ServiceInterface
+var _ ServiceInterface = (*Service)(nil)
+
 func NewService(repository Repository) *Service {
 	return &Service{repository: repository}
 }
 
-func (s *Service) Create(newCampaign dto.NewCampaign) (*Campaign, error) {
+func (s *Service) Create(newCampaign *CreateCampaignRequest) (*CampaignResponse, error) {
 	campaign, err := NewCampaign(newCampaign.Name, newCampaign.Content, newCampaign.Emails)
 
 	if err != nil {
@@ -26,15 +36,50 @@ func (s *Service) Create(newCampaign dto.NewCampaign) (*Campaign, error) {
 		return nil, internalerrors.ErrInternal
 	}
 
-	return campaign, nil
+	return &CampaignResponse{
+		Id:        campaign.Id,
+		Name:      campaign.Name,
+		Status:    campaign.Status,
+		Contacts:  campaign.Contacts,
+		Content:   campaign.Content,
+		CreatedAt: campaign.CreatedAt,
+	}, nil
 }
 
-func (s *Service) Get() (*[]Campaign, error) {
+func (s *Service) Get() (*[]CampaignResponse, error) {
 	campaigns, err := s.repository.Get()
 
 	if err != nil {
 		return nil, internalerrors.ErrInternal
 	}
 
-	return campaigns, nil
+	response := make([]CampaignResponse, 0)
+
+	for _, campaign := range *campaigns {
+		response = append(response, CampaignResponse{
+			Id:        campaign.Id,
+			Name:      campaign.Name,
+			Status:    campaign.Status,
+			Contacts:  campaign.Contacts,
+			CreatedAt: campaign.CreatedAt,
+		})
+	}
+
+	return &response, nil
+}
+
+func (s *Service) Show(id uuid.UUID) (*CampaignResponse, error) {
+	campaign, err := s.repository.Show(&id)
+
+	if err != nil {
+		return nil, internalerrors.ErrInternal
+	}
+
+	return &CampaignResponse{
+		Id:        campaign.Id,
+		Name:      campaign.Name,
+		Status:    campaign.Status,
+		Contacts:  campaign.Contacts,
+		CreatedAt: campaign.CreatedAt,
+	}, nil
 }

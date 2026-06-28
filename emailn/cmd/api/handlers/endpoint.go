@@ -6,23 +6,25 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type EndpointFunc[T any] func(c *gin.Context) (*ResponseConfig, T, error)
+type EndpointFunc[T any] func(c *gin.Context) *ResponseConfig[T]
 
-type ResponseConfig struct {
+type ResponseConfig[T any] struct {
 	SuccessStatus int
 	ErrorStatus   int
+	Data          T
+	Error         error
 }
 
 func EndpointHandler[T any](funcHandler EndpointFunc[T]) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		config, value, err := funcHandler(c)
+		config := funcHandler(c)
 
-		if err != nil {
-			validationerrors.RenderError(c, err, config.ErrorStatus)
+		if config.Error != nil {
+			validationerrors.RenderError(c, config.Error, config.ErrorStatus)
 
 			return
 		}
 
-		c.JSON(config.SuccessStatus, value)
+		c.JSON(config.SuccessStatus, config.Data)
 	}
 }
