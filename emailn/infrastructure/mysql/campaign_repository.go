@@ -30,7 +30,7 @@ func (c *campaignRepository) Get() (*[]campaign.Campaign, error) {
 
 func (c *campaignRepository) Show(id *uuid.UUID) (*campaign.Campaign, error) {
 	var campaign campaign.Campaign
-	tx := c.DB.First(&campaign, id)
+	tx := c.DB.First(&campaign, "id = ?", id)
 
 	return &campaign, tx.Error
 }

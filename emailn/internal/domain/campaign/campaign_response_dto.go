@@ -7,10 +7,10 @@ import (
 )
 
 type CampaignResponse struct {
-	Id        uuid.UUID
-	Name      string
-	CreatedAt time.Time
-	Content   string
-	Status    Status
-	Contacts  *[]Contact
+	Id        uuid.UUID  `json:"id"`
+	Name      string     `json:"name"`
+	CreatedAt time.Time  `json:"created_at"`
+	Content   string     `json:"content"`
+	Status    Status     `json:"status"`
+	Contacts  *[]Contact `json:"contacts"`
 }
