@@ -1,7 +1,7 @@
 package campaign
 
-import "github.com/google/uuid"
+import "emailn/internal/types"
 
 type ShowCampaignParams struct {
-	Id uuid.UUID `uri:"id" binding:"required,uuid" json:"id"`
+	Id types.UUID `uri:"id" binding:"required" json:"id"`
 }

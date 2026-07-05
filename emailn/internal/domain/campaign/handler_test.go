@@ -11,6 +11,7 @@ import (
 	"emailn/cmd/api/container"
 	"emailn/cmd/api/routes"
 	"emailn/internal/domain/campaign"
+	"emailn/internal/types"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -38,7 +39,7 @@ func (s *ServiceMock) Get() (*[]campaign.CampaignResponse, error) {
 	return args.Get(0).(*[]campaign.CampaignResponse), args.Error(1)
 }
 
-func (s *ServiceMock) Show(id uuid.UUID) (*campaign.CampaignResponse, error) {
+func (s *ServiceMock) Show(id types.UUID) (*campaign.CampaignResponse, error) {
 	args := s.Called(id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -138,9 +139,9 @@ func TestHandler(t *testing.T) {
 			url:    "/campaigns/" + uuid.New().String(),
 			body:   `{"id":"` + uuid.New().String() + `"}`,
 			setupMock: func(m *ServiceMock) {
-				m.On("Show", mock.MatchedBy(func(uuid.UUID) bool {
-					return true
-				})).Return(&campaign.CampaignResponse{Id: uuid.New(), Name: "Campaign Name"}, nil)
+			m.On("Show", mock.MatchedBy(func(types.UUID) bool {
+				return true
+			})).Return(&campaign.CampaignResponse{Id: uuid.New(), Name: "Campaign Name"}, nil)
 			},
 			wantStatus: http.StatusOK,
 			wantBody: func(t *testing.T, w *httptest.ResponseRecorder, m *ServiceMock) {

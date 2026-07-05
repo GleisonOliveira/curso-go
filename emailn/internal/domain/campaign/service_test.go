@@ -2,6 +2,7 @@ package campaign
 
 import (
 	"emailn/internal/internalerrors"
+	"emailn/internal/types"
 	"errors"
 	"fmt"
 	"testing"
@@ -27,7 +28,7 @@ func (r *RepositoryMock) Get() (*[]Campaign, error) {
 	return nil, nil
 }
 
-func (r *RepositoryMock) Show(id *uuid.UUID) (*Campaign, error) {
+func (r *RepositoryMock) Show(id types.UUID) (*Campaign, error) {
 	args := r.Called(id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -88,11 +89,11 @@ func Test_ShowCampaign_Success(t *testing.T) {
 	expectedCampaign := &Campaign{Id: id, Name: "Campaign"}
 	expectedCampaignResponse := &CampaignResponse{Id: id, Name: "Campaign"}
 
-	repositoryMock.On("Show", mock.MatchedBy(func(id *uuid.UUID) bool {
-		return id.String() == expectedCampaign.Id.String()
+	repositoryMock.On("Show", mock.MatchedBy(func(id types.UUID) bool {
+		return uuid.UUID(id).String() == expectedCampaign.Id.String()
 	})).Return(expectedCampaign, nil)
 
-	campaignResponse, err := repositoryService.Show(id)
+	campaignResponse, err := repositoryService.Show(types.UUID(id))
 
 	assert.Nil(err)
 	assert.Equal(expectedCampaignResponse, campaignResponse)
@@ -106,11 +107,11 @@ func Test_ShowCampaign_Error(t *testing.T) {
 
 	id := uuid.New()
 
-	repositoryMock.On("Show", mock.MatchedBy(func(campaignId *uuid.UUID) bool {
-		return campaignId.String() == id.String()
+	repositoryMock.On("Show", mock.MatchedBy(func(campaignId types.UUID) bool {
+		return uuid.UUID(campaignId).String() == id.String()
 	})).Return(nil, errors.New("db error"))
 
-	_, err := repositoryService.Show(id)
+	_, err := repositoryService.Show(types.UUID(id))
 
 	assert.NotNil(err)
 	assert.True(errors.Is(internalerrors.ErrInternal, err))

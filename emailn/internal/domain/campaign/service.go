@@ -2,14 +2,13 @@ package campaign
 
 import (
 	"emailn/internal/internalerrors"
-
-	"github.com/google/uuid"
+	"emailn/internal/types"
 )
 
 type ServiceInterface interface {
 	Create(newCampaign *CreateCampaignRequest) (*CampaignResponse, error)
 	Get() (*[]CampaignResponse, error)
-	Show(uuid.UUID) (*CampaignResponse, error)
+	Show(types.UUID) (*CampaignResponse, error)
 }
 
 type Service struct {
@@ -68,8 +67,8 @@ func (s *Service) Get() (*[]CampaignResponse, error) {
 	return &response, nil
 }
 
-func (s *Service) Show(id uuid.UUID) (*CampaignResponse, error) {
-	campaign, err := s.repository.Show(&id)
+func (s *Service) Show(id types.UUID) (*CampaignResponse, error) {
+	campaign, err := s.repository.Show(id)
 
 	if err != nil {
 		return nil, internalerrors.ErrInternal

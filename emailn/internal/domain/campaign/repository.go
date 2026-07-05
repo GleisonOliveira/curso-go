@@ -1,9 +1,9 @@
 package campaign
 
-import "github.com/google/uuid"
+import "emailn/internal/types"
 
 type Repository interface {
 	Save(campaign *Campaign) error
 	Get() (*[]Campaign, error)
-	Show(*uuid.UUID) (*Campaign, error)
+	Show(types.UUID) (*Campaign, error)
 }

@@ -2,8 +2,8 @@ package mysql
 
 import (
 	"emailn/internal/domain/campaign"
+	"emailn/internal/types"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -28,7 +28,7 @@ func (c *campaignRepository) Get() (*[]campaign.Campaign, error) {
 	return &campaigns, tx.Error
 }
 
-func (c *campaignRepository) Show(id *uuid.UUID) (*campaign.Campaign, error) {
+func (c *campaignRepository) Show(id types.UUID) (*campaign.Campaign, error) {
 	var campaign campaign.Campaign
 	tx := c.DB.First(&campaign, "id = ?", id)
 
