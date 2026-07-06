@@ -18,4 +18,7 @@ func RegisterRoutes(r *gin.Engine, c *container.Container) {
 	r.GET("/campaigns/:id",
 		middlewares.ValidatorURI[campaign.ShowCampaignParams](),
 		handlers.EndpointHandler(c.CampaignHandler.HandleShow))
+	r.PATCH("/campaigns/cancel/:id",
+		middlewares.ValidatorURI[campaign.CancelCampaignParams](),
+		handlers.EndpointHandler(c.CampaignHandler.HandleCancel))
 }

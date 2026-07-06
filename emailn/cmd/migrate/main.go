@@ -32,9 +32,12 @@ func main() {
 	)
 
 	m, err := migrate.New("file://migrations", dsn)
+
 	if err != nil {
 		log.Fatalf("Erro ao criar migrate: %v", err)
 	}
+
+	defer m.Close()
 
 	switch {
 	case *down:

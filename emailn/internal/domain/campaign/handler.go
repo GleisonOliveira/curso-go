@@ -30,6 +30,19 @@ func (h *Handler) HandleCreate(c *gin.Context) *handlers.ResponseConfig[*Campaig
 	}
 }
 
+func (h *Handler) HandleCancel(c *gin.Context) *handlers.ResponseConfig[*CampaignResponse] {
+	params := c.MustGet("path").(CancelCampaignParams)
+
+	campaign, err := h.service.Cancel(params.Id)
+
+	return &handlers.ResponseConfig[*CampaignResponse]{
+		SuccessStatus: http.StatusOK,
+		ErrorStatus:   http.StatusBadRequest,
+		Data:          campaign,
+		Error:         err,
+	}
+}
+
 func (h *Handler) HandleGet(c *gin.Context) *handlers.ResponseConfig[*[]CampaignResponse] {
 	campaigns, err := h.service.Get()
 

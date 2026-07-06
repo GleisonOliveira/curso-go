@@ -132,3 +132,84 @@ func Test_CreateCampaign_ValidateRepositorySave(t *testing.T) {
 	assert.True(errors.Is(internalerrors.ErrInternal, err))
 	repositoryMock.AssertExpectations(t)
 }
+
+func Test_CancelCampaign_Success(t *testing.T) {
+	assert := assert.New(t)
+	repositoryMock := new(RepositoryMock)
+	repositoryService := NewService(repositoryMock)
+
+	id := uuid.New()
+	pendingCampaign := &Campaign{Id: id, Name: "Campaign", Status: StatusPending}
+
+	repositoryMock.On("Show", mock.MatchedBy(func(campaignId types.UUID) bool {
+		return uuid.UUID(campaignId).String() == id.String()
+	})).Return(pendingCampaign, nil)
+
+	repositoryMock.On("Save", mock.MatchedBy(func(campaign *Campaign) bool {
+		return campaign.Id == id && campaign.Status == StatusCanceled
+	})).Return(nil)
+
+	campaignResponse, err := repositoryService.Cancel(types.UUID(id))
+
+	assert.Nil(err)
+	assert.Equal(StatusCanceled, campaignResponse.Status)
+	repositoryMock.AssertExpectations(t)
+}
+
+func Test_CancelCampaign_ErrorOnShow(t *testing.T) {
+	assert := assert.New(t)
+	repositoryMock := new(RepositoryMock)
+	repositoryService := NewService(repositoryMock)
+
+	id := uuid.New()
+
+	repositoryMock.On("Show", mock.MatchedBy(func(campaignId types.UUID) bool {
+		return uuid.UUID(campaignId).String() == id.String()
+	})).Return(nil, errors.New("db error"))
+
+	_, err := repositoryService.Cancel(types.UUID(id))
+
+	assert.NotNil(err)
+	assert.True(errors.Is(internalerrors.ErrInternal, err))
+	repositoryMock.AssertExpectations(t)
+}
+
+func Test_CancelCampaign_ErrorOnInvalidStatus(t *testing.T) {
+	assert := assert.New(t)
+	repositoryMock := new(RepositoryMock)
+	repositoryService := NewService(repositoryMock)
+
+	id := uuid.New()
+	approvedCampaign := &Campaign{Id: id, Name: "Campaign", Status: StatusApproved}
+
+	repositoryMock.On("Show", mock.MatchedBy(func(campaignId types.UUID) bool {
+		return uuid.UUID(campaignId).String() == id.String()
+	})).Return(approvedCampaign, nil)
+
+	_, err := repositoryService.Cancel(types.UUID(id))
+
+	assert.NotNil(err)
+	assert.Contains(err.Error(), "Invalid status campaign")
+	repositoryMock.AssertExpectations(t)
+}
+
+func Test_CancelCampaign_ErrorOnUpdate(t *testing.T) {
+	assert := assert.New(t)
+	repositoryMock := new(RepositoryMock)
+	repositoryService := NewService(repositoryMock)
+
+	id := uuid.New()
+	pendingCampaign := &Campaign{Id: id, Name: "Campaign", Status: StatusPending}
+
+	repositoryMock.On("Show", mock.MatchedBy(func(campaignId types.UUID) bool {
+		return uuid.UUID(campaignId).String() == id.String()
+	})).Return(pendingCampaign, nil)
+
+	repositoryMock.On("Save", mock.Anything).Return(errors.New("db error"))
+
+	_, err := repositoryService.Cancel(types.UUID(id))
+
+	assert.NotNil(err)
+	assert.True(errors.Is(internalerrors.ErrInternal, err))
+	repositoryMock.AssertExpectations(t)
+}

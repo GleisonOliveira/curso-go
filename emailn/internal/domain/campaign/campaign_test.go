@@ -99,3 +99,13 @@ func Test_NewCampaign_MustBePendingStatus(t *testing.T) {
 
 	assert.Equal(StatusPending, campaign.Status)
 }
+
+func Test_Cancel(t *testing.T) {
+	assert := assert.New(t)
+
+	campaign, _ := NewCampaign(name, content, []string{"valid@email.com"})
+
+	campaign.Cancel()
+
+	assert.Equal(StatusCanceled, campaign.Status)
+}

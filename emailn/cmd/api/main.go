@@ -19,6 +19,14 @@ func main() {
 	// DI
 	container := container.NewContainer()
 
+	sqlDB, err := container.DB.DB()
+
+	if err != nil {
+		log.Fatal("Erro ao obter conexão com banco de dados")
+	}
+
+	defer sqlDB.Close()
+
 	tagname.Setup()
 	r := gin.Default()
 

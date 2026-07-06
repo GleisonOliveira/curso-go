@@ -47,6 +47,14 @@ func (s *ServiceMock) Show(id types.UUID) (*campaign.CampaignResponse, error) {
 	return args.Get(0).(*campaign.CampaignResponse), args.Error(1)
 }
 
+func (s *ServiceMock) Cancel(id types.UUID) (*campaign.CampaignResponse, error) {
+	args := s.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*campaign.CampaignResponse), args.Error(1)
+}
+
 type testCase struct {
 	name       string
 	method     string
@@ -139,9 +147,9 @@ func TestHandler(t *testing.T) {
 			url:    "/campaigns/" + uuid.New().String(),
 			body:   `{"id":"` + uuid.New().String() + `"}`,
 			setupMock: func(m *ServiceMock) {
-			m.On("Show", mock.MatchedBy(func(types.UUID) bool {
-				return true
-			})).Return(&campaign.CampaignResponse{Id: uuid.New(), Name: "Campaign Name"}, nil)
+				m.On("Show", mock.MatchedBy(func(types.UUID) bool {
+					return true
+				})).Return(&campaign.CampaignResponse{Id: uuid.New(), Name: "Campaign Name"}, nil)
 			},
 			wantStatus: http.StatusOK,
 			wantBody: func(t *testing.T, w *httptest.ResponseRecorder, m *ServiceMock) {
@@ -159,6 +167,41 @@ func TestHandler(t *testing.T) {
 			body:   `{"id":"` + uuid.New().String() + `"}`,
 			setupMock: func(m *ServiceMock) {
 				m.On("Show", mock.Anything).Return(nil, errors.New("service error"))
+			},
+			wantStatus: http.StatusBadRequest,
+			wantBody: func(t *testing.T, w *httptest.ResponseRecorder, m *ServiceMock) {
+				var result map[string]string
+				json.Unmarshal(w.Body.Bytes(), &result)
+				assert.Equal(t, "service error", result["error"])
+				m.AssertExpectations(t)
+			},
+		},
+		{
+			name:   "cancel campaign success",
+			method: http.MethodPatch,
+			url:    "/campaigns/cancel/" + uuid.New().String(),
+			body:   `{"id":"` + uuid.New().String() + `"}`,
+			setupMock: func(m *ServiceMock) {
+				m.On("Cancel", mock.MatchedBy(func(types.UUID) bool {
+					return true
+				})).Return(&campaign.CampaignResponse{Id: uuid.New(), Name: "Campaign Name"}, nil)
+			},
+			wantStatus: http.StatusOK,
+			wantBody: func(t *testing.T, w *httptest.ResponseRecorder, m *ServiceMock) {
+				var result campaign.CampaignResponse
+				json.Unmarshal(w.Body.Bytes(), &result)
+				assert.NotEqual(t, uuid.Nil, result.Id)
+				assert.Equal(t, "Campaign Name", result.Name)
+				m.AssertExpectations(t)
+			},
+		},
+		{
+			name:   "cancel campaign error",
+			method: http.MethodPatch,
+			url:    "/campaigns/cancel/" + uuid.New().String(),
+			body:   `{"id":"` + uuid.New().String() + `"}`,
+			setupMock: func(m *ServiceMock) {
+				m.On("Cancel", mock.Anything).Return(nil, errors.New("service error"))
 			},
 			wantStatus: http.StatusBadRequest,
 			wantBody: func(t *testing.T, w *httptest.ResponseRecorder, m *ServiceMock) {

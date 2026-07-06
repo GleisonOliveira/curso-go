@@ -3,12 +3,14 @@ package campaign
 import (
 	"emailn/internal/internalerrors"
 	"emailn/internal/types"
+	"errors"
 )
 
 type ServiceInterface interface {
 	Create(newCampaign *CreateCampaignRequest) (*CampaignResponse, error)
 	Get() (*[]CampaignResponse, error)
 	Show(types.UUID) (*CampaignResponse, error)
+	Cancel(types.UUID) (*CampaignResponse, error)
 }
 
 type Service struct {
@@ -69,6 +71,33 @@ func (s *Service) Get() (*[]CampaignResponse, error) {
 
 func (s *Service) Show(id types.UUID) (*CampaignResponse, error) {
 	campaign, err := s.repository.Show(id)
+
+	if err != nil {
+		return nil, internalerrors.ErrInternal
+	}
+
+	return &CampaignResponse{
+		Id:        campaign.Id,
+		Name:      campaign.Name,
+		Status:    campaign.Status,
+		Contacts:  campaign.Contacts,
+		CreatedAt: campaign.CreatedAt,
+	}, nil
+}
+
+func (s *Service) Cancel(id types.UUID) (*CampaignResponse, error) {
+	campaign, err := s.repository.Show(id)
+
+	if err != nil {
+		return nil, internalerrors.ErrInternal
+	}
+
+	if campaign.Status != StatusPending {
+		return nil, errors.New("Invalid status campaign")
+	}
+
+	campaign.Cancel()
+	err = s.repository.Save(campaign)
 
 	if err != nil {
 		return nil, internalerrors.ErrInternal
