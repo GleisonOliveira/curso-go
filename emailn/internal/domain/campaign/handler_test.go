@@ -55,6 +55,11 @@ func (s *ServiceMock) Cancel(id types.UUID) (*campaign.CampaignResponse, error) 
 	return args.Get(0).(*campaign.CampaignResponse), args.Error(1)
 }
 
+func (s *ServiceMock) Delete(id types.UUID) error {
+	args := s.Called(id)
+	return args.Error(0)
+}
+
 type testCase struct {
 	name       string
 	method     string
@@ -202,6 +207,37 @@ func TestHandler(t *testing.T) {
 			body:   `{"id":"` + uuid.New().String() + `"}`,
 			setupMock: func(m *ServiceMock) {
 				m.On("Cancel", mock.Anything).Return(nil, errors.New("service error"))
+			},
+			wantStatus: http.StatusBadRequest,
+			wantBody: func(t *testing.T, w *httptest.ResponseRecorder, m *ServiceMock) {
+				var result map[string]string
+				json.Unmarshal(w.Body.Bytes(), &result)
+				assert.Equal(t, "service error", result["error"])
+				m.AssertExpectations(t)
+			},
+		},
+		{
+			name:   "delete campaign success",
+			method: http.MethodDelete,
+			url:    "/campaigns/" + uuid.New().String(),
+			body:   "",
+			setupMock: func(m *ServiceMock) {
+				m.On("Delete", mock.MatchedBy(func(types.UUID) bool {
+					return true
+				})).Return(nil)
+			},
+			wantStatus: http.StatusNoContent,
+			wantBody: func(t *testing.T, w *httptest.ResponseRecorder, m *ServiceMock) {
+				m.AssertExpectations(t)
+			},
+		},
+		{
+			name:   "delete campaign error",
+			method: http.MethodDelete,
+			url:    "/campaigns/" + uuid.New().String(),
+			body:   "",
+			setupMock: func(m *ServiceMock) {
+				m.On("Delete", mock.Anything).Return(errors.New("service error"))
 			},
 			wantStatus: http.StatusBadRequest,
 			wantBody: func(t *testing.T, w *httptest.ResponseRecorder, m *ServiceMock) {

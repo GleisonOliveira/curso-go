@@ -11,6 +11,7 @@ type ServiceInterface interface {
 	Get() (*[]CampaignResponse, error)
 	Show(types.UUID) (*CampaignResponse, error)
 	Cancel(types.UUID) (*CampaignResponse, error)
+	Delete(types.UUID) error
 }
 
 type Service struct {
@@ -73,7 +74,7 @@ func (s *Service) Show(id types.UUID) (*CampaignResponse, error) {
 	campaign, err := s.repository.Show(id)
 
 	if err != nil {
-		return nil, internalerrors.ErrInternal
+		return nil, internalerrors.ProcessError(err)
 	}
 
 	return &CampaignResponse{
@@ -85,11 +86,31 @@ func (s *Service) Show(id types.UUID) (*CampaignResponse, error) {
 	}, nil
 }
 
+func (s *Service) Delete(id types.UUID) error {
+	campaign, err := s.repository.Show(id)
+
+	if err != nil {
+		return internalerrors.ProcessError(err)
+	}
+
+	if campaign.Status != StatusPending {
+		return errors.New("Invalid status campaign")
+	}
+
+	err = s.repository.Delete(campaign)
+
+	if err != nil {
+		return internalerrors.ErrInternal
+	}
+
+	return nil
+}
+
 func (s *Service) Cancel(id types.UUID) (*CampaignResponse, error) {
 	campaign, err := s.repository.Show(id)
 
 	if err != nil {
-		return nil, internalerrors.ErrInternal
+		return nil, internalerrors.ProcessError(err)
 	}
 
 	if campaign.Status != StatusPending {

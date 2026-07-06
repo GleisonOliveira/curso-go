@@ -54,6 +54,18 @@ func (h *Handler) HandleGet(c *gin.Context) *handlers.ResponseConfig[*[]Campaign
 	}
 }
 
+func (h *Handler) HandleDelete(c *gin.Context) *handlers.ResponseConfig[*CampaignResponse] {
+	params := c.MustGet("path").(DeleteCampaignParams)
+
+	err := h.service.Delete(params.Id)
+
+	return &handlers.ResponseConfig[*CampaignResponse]{
+		SuccessStatus: http.StatusNoContent,
+		ErrorStatus:   http.StatusBadRequest,
+		Error:         err,
+	}
+}
+
 func (h *Handler) HandleShow(c *gin.Context) *handlers.ResponseConfig[*CampaignResponse] {
 	params := c.MustGet("path").(ShowCampaignParams)
 

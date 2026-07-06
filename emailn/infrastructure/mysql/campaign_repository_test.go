@@ -102,6 +102,31 @@ func TestShow_Success(t *testing.T) {
 	assert.Equal(t, newCampaign.Status, saved.Status)
 }
 
+func TestDelete_Success(t *testing.T) {
+	tx := testDB.Begin()
+	defer tx.Rollback()
+
+	repo := NewCampaignRepository(tx)
+
+	newCampaign, err := campaign.NewCampaign("Test Campaign Delete", "Body content for delete test", []string{"delete@test.com"})
+	require.NoError(t, err)
+
+	err = repo.Save(newCampaign)
+	require.NoError(t, err)
+
+	// check the record exists before delete
+	var found campaign.Campaign
+	res := tx.Where("id = ?", newCampaign.Id).First(&found)
+	require.NoError(t, res.Error)
+	require.Equal(t, newCampaign.Id, found.Id)
+
+	err = repo.Delete(newCampaign)
+	assert.NoError(t, err)
+
+	res = tx.Where("id = ?", newCampaign.Id).First(&campaign.Campaign{})
+	assert.ErrorIs(t, res.Error, gorm.ErrRecordNotFound)
+}
+
 func TestShow_NotFound(t *testing.T) {
 	tx := testDB.Begin()
 	defer tx.Rollback()
@@ -110,5 +135,5 @@ func TestShow_NotFound(t *testing.T) {
 
 	_, err := repo.Show(types.UUID(uuid.New()))
 	assert.Error(t, err)
-	assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
+	assert.Contains(t, err.Error(), "campaign not found")
 }

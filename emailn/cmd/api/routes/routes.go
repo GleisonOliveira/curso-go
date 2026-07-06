@@ -21,4 +21,7 @@ func RegisterRoutes(r *gin.Engine, c *container.Container) {
 	r.PATCH("/campaigns/cancel/:id",
 		middlewares.ValidatorURI[campaign.CancelCampaignParams](),
 		handlers.EndpointHandler(c.CampaignHandler.HandleCancel))
+	r.DELETE("/campaigns/:id",
+		middlewares.ValidatorURI[campaign.DeleteCampaignParams](),
+		handlers.EndpointHandler(c.CampaignHandler.HandleDelete))
 }

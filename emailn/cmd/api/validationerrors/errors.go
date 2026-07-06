@@ -31,6 +31,16 @@ func GetError(key string, params ...any) string {
 }
 
 func RenderError(c *gin.Context, err error, status int) {
+	var notFoundErr *internalerrors.ErrNotFound
+
+	if errors.As(err, &notFoundErr) {
+		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{
+			"error": err.Error(),
+		})
+
+		return
+	}
+
 	if errors.Is(err, internalerrors.ErrInternal) {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),

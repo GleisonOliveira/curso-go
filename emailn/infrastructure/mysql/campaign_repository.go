@@ -1,7 +1,9 @@
 package mysql
 
 import (
+	"errors"
 	"emailn/internal/domain/campaign"
+	"emailn/internal/internalerrors"
 	"emailn/internal/types"
 
 	"gorm.io/gorm"
@@ -16,8 +18,8 @@ func NewCampaignRepository(DB *gorm.DB) *campaignRepository {
 	return &campaignRepository{DB: DB}
 }
 
-func (c *campaignRepository) Save(campaign *campaign.Campaign) error {
-	tx := c.DB.Clauses(clause.OnConflict{UpdateAll: true}).Create(campaign)
+func (c *campaignRepository) Save(camp *campaign.Campaign) error {
+	tx := c.DB.Clauses(clause.OnConflict{UpdateAll: true}).Create(camp)
 
 	return tx.Error
 }
@@ -30,8 +32,18 @@ func (c *campaignRepository) Get() (*[]campaign.Campaign, error) {
 }
 
 func (c *campaignRepository) Show(id types.UUID) (*campaign.Campaign, error) {
-	var campaign campaign.Campaign
-	tx := c.DB.Preload("Contacts").First(&campaign, "id = ?", id)
+	var camp campaign.Campaign
+	tx := c.DB.Preload("Contacts").First(&camp, "id = ?", id)
 
-	return &campaign, tx.Error
+	if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+		return nil, &internalerrors.ErrNotFound{Entity: "campaign"}
+	}
+
+	return &camp, tx.Error
+}
+
+func (c *campaignRepository) Delete(camp *campaign.Campaign) error {
+	tx := c.DB.Select("Contacts").Where("id = ?", camp.Id).Delete(&campaign.Campaign{})
+
+	return tx.Error
 }

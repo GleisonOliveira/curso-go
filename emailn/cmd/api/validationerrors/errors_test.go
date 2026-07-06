@@ -59,6 +59,20 @@ func Test_GetError_UnknownKey(t *testing.T) {
 	assert.Equal("", result)
 }
 
+func Test_RenderError_NotFound(t *testing.T) {
+	assert := assert.New(t)
+	gin.SetMode(gin.TestMode)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	notFoundErr := &internalerrors.ErrNotFound{Entity: "campaign"}
+	RenderError(c, notFoundErr, http.StatusBadRequest)
+
+	assert.Equal(http.StatusNotFound, w.Code)
+	assert.Contains(w.Body.String(), "campaign not found")
+}
+
 func Test_RenderError_InternalError(t *testing.T) {
 	assert := assert.New(t)
 	gin.SetMode(gin.TestMode)
