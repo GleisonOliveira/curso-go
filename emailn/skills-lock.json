@@ -30,6 +30,12 @@
       "sourceType": "github",
       "skillPath": "skills/golang-performance/SKILL.md",
       "computedHash": "56a9621bfd52c2674a27217f8e223df117b605b15fe06be8ec666c5d2c02604e"
+    },
+    "golang-testing": {
+      "source": "affaan-m/ecc",
+      "sourceType": "github",
+      "skillPath": "skills/golang-testing/SKILL.md",
+      "computedHash": "2382486a38644d23fca692cf12b063ff81efd2b50628e83f8a1839976134d89a"
     }
   }
 }
