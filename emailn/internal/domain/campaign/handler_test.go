@@ -10,9 +10,11 @@ import (
 
 	"emailn/cmd/api/container"
 	"emailn/cmd/api/routes"
+	"emailn/internal/domain/auth"
 	"emailn/internal/domain/campaign"
 	"emailn/internal/types"
 
+	"github.com/coreos/go-oidc"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -21,6 +23,23 @@ import (
 
 type ServiceMock struct {
 	mock.Mock
+}
+
+type AuthServiceMock struct {
+	mock.Mock
+}
+
+func (s *AuthServiceMock) ExchangeCode(code string) (*auth.TokenResponse, error) {
+	args := s.Called(code)
+	return nil, args.Error(1)
+}
+
+func (s *AuthServiceMock) VerifyToken(token string) (*oidc.IDToken, error) {
+	args := s.Called(token)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*oidc.IDToken), args.Error(1)
 }
 
 func (s *ServiceMock) Create(newCampaign *campaign.CreateCampaignRequest) (*campaign.CampaignResponse, error) {
@@ -254,14 +273,18 @@ func TestHandler(t *testing.T) {
 			serviceMock := new(ServiceMock)
 			tc.setupMock(serviceMock)
 
+			authServiceMock := new(AuthServiceMock)
+			authServiceMock.On("VerifyToken", "test-token").Return((*oidc.IDToken)(nil), nil)
+
 			handler := campaign.NewCampaignHandler(serviceMock)
-			ctn := &container.Container{CampaignHandler: handler}
+			ctn := &container.Container{CampaignHandler: handler, AuthService: authServiceMock}
 
 			router := gin.New()
 			routes.RegisterRoutes(router, ctn)
 
 			w := httptest.NewRecorder()
 			req := httptest.NewRequest(tc.method, tc.url, strings.NewReader(tc.body))
+			req.Header.Set("Authorization", "Bearer test-token")
 			if tc.body != "" {
 				req.Header.Set("Content-Type", "application/json")
 			}

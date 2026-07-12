@@ -38,3 +38,40 @@ go run ./cmd/migrate -steps 2
 ```bash
 go tool air
 ```
+
+
+## Keycloak
+
+### Machine to machine
+```
+curl --location 'http://localhost:8080/realms/emailn/protocol/openid-connect/token' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'client_id=emailn' \
+--data-urlencode 'client_secret=secret' \
+--data-urlencode 'grant_type=client_credentials'
+```
+
+### Username and password
+```
+curl --location 'http://localhost:8080/realms/emailn/protocol/openid-connect/token' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'client_id=emailn_users' \
+--data-urlencode 'password=admin' \
+--data-urlencode 'grant_type=password' \
+--data-urlencode 'username=gleison'
+```
+
+### Username and password OAuth
+```
+http://localhost:8080/realms/emailn/protocol/openid-connect/auth?client_id=emailn&redirect_uri=http://localhost:8082/auth/callback&response_type=code&scope=openid&state=168e4224ae9060856521f14a36b565df
+```
+
+```
+curl --location 'http://localhost:8080/realms/emailn/protocol/openid-connect/token' \
+--header 'Content-Type: application/x-www-form-urlencoded' \
+--data-urlencode 'client_id=emailn' \
+--data-urlencode 'client_secret=6FYfuOLWqhOnQA7zb5gbCjBf1JAKPvSG' \
+--data-urlencode 'grant_type=authorization_code' \
+--data-urlencode 'code=code' \
+--data-urlencode 'redirect_uri=http://localhost:8082/auth/callback'
+```

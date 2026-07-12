@@ -11,5 +11,34 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: emailn-keycloak-db
+    environment:
+      POSTGRES_USER: ${KEYCLOAK_DB_USER}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      POSTGRES_DB: ${KEYCLOAK_DB_NAME}
+    volumes:
+      - keycloak-dbdata:/var/lib/postgresql/data
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: emailn-keycloak
+    command: start-dev
+    ports:
+      - "8080:8080"
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: keycloak-db
+      KC_DB_URL_PORT: 5432
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USER}
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD}
+      KC_DB_DATABASE: ${KEYCLOAK_DB_NAME}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+    depends_on:
+      - keycloak-db
+
 volumes:
   pgdata:
+  keycloak-dbdata:

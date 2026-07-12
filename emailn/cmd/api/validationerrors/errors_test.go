@@ -86,6 +86,19 @@ func Test_RenderError_InternalError(t *testing.T) {
 	assert.Contains(w.Body.String(), internalerrors.ErrInternal.Error())
 }
 
+func Test_RenderError_AuthInternal(t *testing.T) {
+	assert := assert.New(t)
+	gin.SetMode(gin.TestMode)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+
+	RenderError(c, internalerrors.AuthInternal, http.StatusBadRequest)
+
+	assert.Equal(http.StatusUnauthorized, w.Code)
+	assert.Contains(w.Body.String(), internalerrors.AuthInternal.Error())
+}
+
 func Test_RenderError_CustomError(t *testing.T) {
 	assert := assert.New(t)
 	gin.SetMode(gin.TestMode)

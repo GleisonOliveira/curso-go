@@ -32,5 +32,5 @@ func main() {
 
 	routes.RegisterRoutes(r, container)
 
-	r.Run("localhost:8080")
+	r.Run("localhost:8082")
 }

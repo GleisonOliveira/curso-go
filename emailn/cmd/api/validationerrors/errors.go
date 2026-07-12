@@ -49,6 +49,22 @@ func RenderError(c *gin.Context, err error, status int) {
 		return
 	}
 
+	if errors.Is(err, internalerrors.AuthInternal) {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": err.Error(),
+		})
+
+		return
+	}
+
+	if errors.Is(err, internalerrors.ErrUnauthorized) {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"error": err.Error(),
+		})
+
+		return
+	}
+
 	c.AbortWithStatusJSON(status, gin.H{
 		"error": err.Error(),
 	})

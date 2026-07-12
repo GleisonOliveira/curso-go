@@ -11,6 +11,8 @@ func (e *ErrNotFound) Error() string {
 }
 
 var ErrInternal error = errors.New("Internal Server Error")
+var AuthInternal error = errors.New("Incorrect auth flow credentials")
+var ErrUnauthorized error = errors.New("Unauthorized")
 
 func ProcessError(err error) error {
 	var notFoundErr *ErrNotFound
