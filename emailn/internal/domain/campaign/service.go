@@ -7,7 +7,7 @@ import (
 )
 
 type ServiceInterface interface {
-	Create(newCampaign *CreateCampaignRequest) (*CampaignResponse, error)
+	Create(newCampaign *CreateCampaignRequest, createdBy string) (*CampaignResponse, error)
 	Get() (*[]CampaignResponse, error)
 	Show(types.UUID) (*CampaignResponse, error)
 	Cancel(types.UUID) (*CampaignResponse, error)
@@ -25,8 +25,8 @@ func NewService(repository Repository) *Service {
 	return &Service{repository: repository}
 }
 
-func (s *Service) Create(newCampaign *CreateCampaignRequest) (*CampaignResponse, error) {
-	campaign, err := NewCampaign(newCampaign.Name, newCampaign.Content, newCampaign.Emails)
+func (s *Service) Create(newCampaign *CreateCampaignRequest, createdBy string) (*CampaignResponse, error) {
+	campaign, err := NewCampaign(newCampaign.Name, newCampaign.Content, newCampaign.Emails, createdBy)
 
 	if err != nil {
 		return nil, err
@@ -45,6 +45,7 @@ func (s *Service) Create(newCampaign *CreateCampaignRequest) (*CampaignResponse,
 		Contacts:  campaign.Contacts,
 		Content:   campaign.Content,
 		CreatedAt: campaign.CreatedAt,
+		CreatedBy: campaign.CreatedBy,
 	}, nil
 }
 
@@ -64,6 +65,7 @@ func (s *Service) Get() (*[]CampaignResponse, error) {
 			Status:    campaign.Status,
 			Contacts:  campaign.Contacts,
 			CreatedAt: campaign.CreatedAt,
+			CreatedBy: campaign.CreatedBy,
 		})
 	}
 
@@ -83,6 +85,7 @@ func (s *Service) Show(id types.UUID) (*CampaignResponse, error) {
 		Status:    campaign.Status,
 		Contacts:  campaign.Contacts,
 		CreatedAt: campaign.CreatedAt,
+		CreatedBy: campaign.CreatedBy,
 	}, nil
 }
 
@@ -130,5 +133,6 @@ func (s *Service) Cancel(id types.UUID) (*CampaignResponse, error) {
 		Status:    campaign.Status,
 		Contacts:  campaign.Contacts,
 		CreatedAt: campaign.CreatedAt,
+		CreatedBy: campaign.CreatedBy,
 	}, nil
 }

@@ -62,7 +62,7 @@ func Test_CreateCampaign(t *testing.T) {
 		return true
 	})).Return(nil)
 
-	campaignResponse, err := repositoryService.Create(&newCampaign)
+	campaignResponse, err := repositoryService.Create(&newCampaign, "user@email.com")
 
 	assert.Nil(err)
 	assert.IsType(&CampaignResponse{}, campaignResponse)
@@ -80,7 +80,7 @@ func Test_CreateCampaign_ValidateDomainError(t *testing.T) {
 		Emails:  []string{"joao@teste.com"},
 	}
 
-	_, err := repositoryService.Create(&invalidNewCampaign)
+	_, err := repositoryService.Create(&invalidNewCampaign, "useremail.com")
 
 	assert.NotNil(err)
 	repositoryMock.AssertNotCalled(t, "Save")
@@ -91,8 +91,8 @@ func Test_ShowCampaign_Success(t *testing.T) {
 	repositoryService := NewService(repositoryMock)
 
 	id := uuid.New()
-	expectedCampaign := &Campaign{Id: id, Name: "Campaign"}
-	expectedCampaignResponse := &CampaignResponse{Id: id, Name: "Campaign"}
+	expectedCampaign := &Campaign{Id: id, Name: "Campaign", CreatedBy: "user@email.com"}
+	expectedCampaignResponse := &CampaignResponse{Id: id, Name: "Campaign", CreatedBy: "user@email.com"}
 
 	repositoryMock.On("Show", mock.MatchedBy(func(id types.UUID) bool {
 		return uuid.UUID(id).String() == expectedCampaign.Id.String()
@@ -150,7 +150,7 @@ func Test_CreateCampaign_ValidateRepositorySave(t *testing.T) {
 	dbError := "DB ERROR"
 	repositoryMock.On("Save", mock.Anything).Return(errors.New(dbError))
 
-	_, err := repositoryService.Create(&newCampaign)
+	_, err := repositoryService.Create(&newCampaign, "user@email.com")
 
 	fmt.Println(err.Error())
 	assert.NotNil(err)

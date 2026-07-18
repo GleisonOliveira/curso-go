@@ -82,6 +82,7 @@ func (s *Service) ExchangeCode(code string) (*TokenResponse, error) {
 
 func (s *Service) VerifyToken(token string) (*oidc.IDToken, error) {
 	idToken, err := s.verifier.Verify(context.Background(), token)
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to verify token: %w", err)
 	}

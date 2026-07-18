@@ -12,5 +12,6 @@ type CampaignResponse struct {
 	CreatedAt time.Time  `json:"created_at"`
 	Content   string     `json:"content"`
 	Status    Status     `json:"status"`
+	CreatedBy string     `json:"created_by"`
 	Contacts  *[]Contact `json:"contacts"`
 }

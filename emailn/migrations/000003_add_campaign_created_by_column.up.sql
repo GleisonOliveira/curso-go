@@ -1,0 +1,2 @@
+ALTER TABLE campaigns
+ADD COLUMN created_by VARCHAR(255);
