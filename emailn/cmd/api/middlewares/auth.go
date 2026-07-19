@@ -40,7 +40,24 @@ func Auth(service auth.ServiceInterface) gin.HandlerFunc {
 			return
 		}
 
+		var claims *auth.Claims
+
+		if err := idToken.Claims(&claims); err != nil {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"errors": internalerrors.ErrUnauthorized.Error(),
+			})
+			return
+		}
+
+		if claims.Email == "" {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"errors2": internalerrors.ErrUnauthorized.Error(),
+			})
+			return
+		}
+
 		c.Set("IDToken", idToken)
+		c.Set("Claims", claims)
 		c.Next()
 	}
 }

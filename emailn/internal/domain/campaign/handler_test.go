@@ -5,8 +5,10 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"strings"
 	"testing"
+	"unsafe"
 
 	"emailn/cmd/api/container"
 	"emailn/cmd/api/routes"
@@ -42,8 +44,8 @@ func (s *AuthServiceMock) VerifyToken(token string) (*oidc.IDToken, error) {
 	return args.Get(0).(*oidc.IDToken), args.Error(1)
 }
 
-func (s *ServiceMock) Create(newCampaign *campaign.CreateCampaignRequest) (*campaign.CampaignResponse, error) {
-	args := s.Called(newCampaign)
+func (s *ServiceMock) Create(newCampaign *campaign.CreateCampaignRequest, createdBy string) (*campaign.CampaignResponse, error) {
+	args := s.Called(newCampaign, createdBy)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -79,6 +81,16 @@ func (s *ServiceMock) Delete(id types.UUID) error {
 	return args.Error(0)
 }
 
+func createTestIDToken(email string) *oidc.IDToken {
+	claimsJSON, _ := json.Marshal(map[string]interface{}{
+		"email": email,
+	})
+	token := &oidc.IDToken{}
+	claimsField := reflect.ValueOf(token).Elem().FieldByName("claims")
+	reflect.NewAt(claimsField.Type(), unsafe.Pointer(claimsField.UnsafeAddr())).Elem().SetBytes(claimsJSON)
+	return token
+}
+
 type testCase struct {
 	name       string
 	method     string
@@ -100,7 +112,7 @@ func TestHandler(t *testing.T) {
 				expected := &campaign.CampaignResponse{Id: uuid.New(), Name: "Campaign Name"}
 				m.On("Create", mock.MatchedBy(func(c *campaign.CreateCampaignRequest) bool {
 					return c.Name == "Campaign Name"
-				})).Return(expected, nil)
+				}), mock.Anything).Return(expected, nil)
 			},
 			wantStatus: http.StatusCreated,
 			wantBody: func(t *testing.T, w *httptest.ResponseRecorder, m *ServiceMock) {
@@ -117,13 +129,32 @@ func TestHandler(t *testing.T) {
 			url:    "/campaigns",
 			body:   `{"name":"Campaign Name","content":"Body content here","emails":["user@test.com"]}`,
 			setupMock: func(m *ServiceMock) {
-				m.On("Create", mock.Anything).Return(nil, errors.New("service error"))
+				m.On("Create", mock.Anything, mock.Anything).Return(nil, errors.New("service error"))
 			},
 			wantStatus: http.StatusBadRequest,
 			wantBody: func(t *testing.T, w *httptest.ResponseRecorder, m *ServiceMock) {
 				var result map[string]string
 				json.Unmarshal(w.Body.Bytes(), &result)
 				assert.Equal(t, "service error", result["error"])
+				m.AssertExpectations(t)
+			},
+		},
+		{
+			name:   "create campaign passes email from claims to service",
+			method: http.MethodPost,
+			url:    "/campaigns",
+			body:   `{"name":"Campaign Name","content":"Body content here","emails":["user@test.com"]}`,
+			setupMock: func(m *ServiceMock) {
+				expected := &campaign.CampaignResponse{Id: uuid.New(), Name: "Campaign Name"}
+				m.On("Create", mock.MatchedBy(func(c *campaign.CreateCampaignRequest) bool {
+					return c.Name == "Campaign Name"
+				}), mock.MatchedBy(func(createdBy string) bool {
+					return createdBy == "user@test.com"
+				})).Return(expected, nil)
+			},
+			wantStatus: http.StatusCreated,
+			wantBody: func(t *testing.T, w *httptest.ResponseRecorder, m *ServiceMock) {
+				assert.Equal(t, http.StatusCreated, w.Code)
 				m.AssertExpectations(t)
 			},
 		},
@@ -269,12 +300,12 @@ func TestHandler(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			gin.SetMode(gin.TestMode)
-
 			serviceMock := new(ServiceMock)
 			tc.setupMock(serviceMock)
 
 			authServiceMock := new(AuthServiceMock)
-			authServiceMock.On("VerifyToken", "test-token").Return((*oidc.IDToken)(nil), nil)
+			idToken := createTestIDToken("user@test.com")
+			authServiceMock.On("VerifyToken", "test-token").Return(idToken, nil)
 
 			handler := campaign.NewCampaignHandler(serviceMock)
 			ctn := &container.Container{CampaignHandler: handler, AuthService: authServiceMock}

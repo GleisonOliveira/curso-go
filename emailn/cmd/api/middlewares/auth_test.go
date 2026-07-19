@@ -7,8 +7,9 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
-	"time"
+	"unsafe"
 
 	"github.com/coreos/go-oidc"
 	"github.com/gin-gonic/gin"
@@ -42,6 +43,16 @@ type testCase struct {
 	setupMock  func(*ServiceMock)
 	wantStatus int
 	wantBody   func(*testing.T, *httptest.ResponseRecorder)
+}
+
+func createTestIDToken(email string) *oidc.IDToken {
+	claimsJSON, _ := json.Marshal(map[string]interface{}{
+		"email": email,
+	})
+	token := &oidc.IDToken{}
+	claimsField := reflect.ValueOf(token).Elem().FieldByName("claims")
+	reflect.NewAt(claimsField.Type(), unsafe.Pointer(claimsField.UnsafeAddr())).Elem().SetBytes(claimsJSON)
+	return token
 }
 
 func TestAuth(t *testing.T) {
@@ -97,12 +108,7 @@ func TestAuth(t *testing.T) {
 			name:   "valid token",
 			header: "Bearer valid-token",
 			setupMock: func(m *ServiceMock) {
-				idToken := &oidc.IDToken{
-					Subject:  "user-123",
-					Issuer:   "http://localhost:8080",
-					Audience: []string{"emailn"},
-					Expiry:   time.Now().Add(1 * time.Hour),
-				}
+				idToken := createTestIDToken("user@test.com")
 				m.On("VerifyToken", "valid-token").Return(idToken, nil)
 			},
 			wantStatus: http.StatusOK,
@@ -122,6 +128,46 @@ func TestAuth(t *testing.T) {
 				var body map[string]string
 				json.Unmarshal(w.Body.Bytes(), &body)
 				assert.Equal(t, "Unauthorized", body["error"])
+			},
+		},
+		{
+			name:   "claims extraction error",
+			header: "Bearer token-no-claims",
+			setupMock: func(m *ServiceMock) {
+				idToken := &oidc.IDToken{}
+				m.On("VerifyToken", "token-no-claims").Return(idToken, nil)
+			},
+			wantStatus: http.StatusUnauthorized,
+			wantBody: func(t *testing.T, w *httptest.ResponseRecorder) {
+				var body map[string]string
+				json.Unmarshal(w.Body.Bytes(), &body)
+				assert.Equal(t, "Unauthorized", body["errors"])
+			},
+		},
+		{
+			name:   "empty email in claims",
+			header: "Bearer token-empty-email",
+			setupMock: func(m *ServiceMock) {
+				idToken := createTestIDToken("")
+				m.On("VerifyToken", "token-empty-email").Return(idToken, nil)
+			},
+			wantStatus: http.StatusUnauthorized,
+			wantBody: func(t *testing.T, w *httptest.ResponseRecorder) {
+				var body map[string]string
+				json.Unmarshal(w.Body.Bytes(), &body)
+				assert.Equal(t, "Unauthorized", body["errors2"])
+			},
+		},
+		{
+			name:   "valid token sets Claims in context",
+			header: "Bearer token-with-claims",
+			setupMock: func(m *ServiceMock) {
+				idToken := createTestIDToken("admin@test.com")
+				m.On("VerifyToken", "token-with-claims").Return(idToken, nil)
+			},
+			wantStatus: http.StatusOK,
+			wantBody: func(t *testing.T, w *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusOK, w.Code)
 			},
 		},
 	} {

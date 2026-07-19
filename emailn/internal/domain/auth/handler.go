@@ -25,7 +25,7 @@ func (h *Handler) HandleLogin(c *gin.Context) {
 		"client_id=" + h.config.ClientID +
 		"&redirect_uri=" + h.config.CallbackURL +
 		"&response_type=code" +
-		"&scope=openid" +
+		"&scope=openid email" +
 		"&state=" + state
 
 	c.Redirect(http.StatusTemporaryRedirect, authURL)

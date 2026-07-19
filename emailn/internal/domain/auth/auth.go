@@ -12,6 +12,10 @@ type Config struct {
 	ClientSecret string
 }
 
+type Claims struct {
+	Email string `json:"email"`
+}
+
 func NewConfig() *Config {
 	return &Config{
 		BaseURL:      os.Getenv("KEYCLOAK_BASE_URL"),

@@ -53,6 +53,7 @@ func TestHandler(t *testing.T) {
 				assert.Contains(t, location, "client_id=test-client")
 				assert.Contains(t, location, "response_type=code")
 				assert.Contains(t, location, "scope=openid")
+				assert.Contains(t, location, "email")
 				assert.Contains(t, location, "state=")
 				m.AssertNotCalled(t, "ExchangeCode")
 			},

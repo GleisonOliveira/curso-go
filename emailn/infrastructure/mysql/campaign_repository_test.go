@@ -32,7 +32,7 @@ func TestSave_Success(t *testing.T) {
 
 	repo := NewCampaignRepository(tx)
 
-	newCampaign, err := campaign.NewCampaign("Test Campaign Save", "Body content for save test", []string{"save@test.com"})
+	newCampaign, err := campaign.NewCampaign("Test Campaign Save", "Body content for save test", []string{"save@test.com"}, "save@test.com")
 	require.NoError(t, err)
 
 	err = repo.Save(newCampaign)
@@ -46,6 +46,7 @@ func TestSave_Success(t *testing.T) {
 	assert.Equal(t, newCampaign.Content, saved.Content)
 	assert.Equal(t, newCampaign.Status, saved.Status)
 	assert.Equal(t, newCampaign.CreatedAt.Unix(), saved.CreatedAt.Unix())
+	assert.Equal(t, newCampaign.CreatedBy, saved.CreatedBy)
 	assert.Len(t, *saved.Contacts, 1)
 	assert.Equal(t, (*newCampaign.Contacts)[0].Email, (*saved.Contacts)[0].Email)
 }
@@ -68,12 +69,12 @@ func TestGet_WithCampaigns(t *testing.T) {
 
 	repo := NewCampaignRepository(tx)
 
-	campaign1, err := campaign.NewCampaign("First Campaign Get", "Content for first get", []string{"first@test.com"})
+	campaign1, err := campaign.NewCampaign("First Campaign Get", "Content for first get", []string{"first@test.com"}, "first@test.com")
 	require.NoError(t, err)
 	err = repo.Save(campaign1)
 	require.NoError(t, err)
 
-	campaign2, err := campaign.NewCampaign("Second Campaign Get", "Content for second get", []string{"second@test.com"})
+	campaign2, err := campaign.NewCampaign("Second Campaign Get", "Content for second get", []string{"second@test.com"}, "second@test.com")
 	require.NoError(t, err)
 	err = repo.Save(campaign2)
 	require.NoError(t, err)
@@ -89,7 +90,7 @@ func TestShow_Success(t *testing.T) {
 
 	repo := NewCampaignRepository(tx)
 
-	newCampaign, err := campaign.NewCampaign("Test Campaign Show", "Body content for show test", []string{"show@test.com"})
+	newCampaign, err := campaign.NewCampaign("Test Campaign Show", "Body content for show test", []string{"show@test.com"}, "show@test.com")
 	require.NoError(t, err)
 	err = repo.Save(newCampaign)
 	require.NoError(t, err)
@@ -108,7 +109,7 @@ func TestDelete_Success(t *testing.T) {
 
 	repo := NewCampaignRepository(tx)
 
-	newCampaign, err := campaign.NewCampaign("Test Campaign Delete", "Body content for delete test", []string{"delete@test.com"})
+	newCampaign, err := campaign.NewCampaign("Test Campaign Delete", "Body content for delete test", []string{"delete@test.com"}, "delete@test.com")
 	require.NoError(t, err)
 
 	err = repo.Save(newCampaign)

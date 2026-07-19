@@ -74,7 +74,7 @@ func Test_NewCampaign_MustValidateContentMax(t *testing.T) {
 func Test_NewCampaign_MustValidateEmail(t *testing.T) {
 	assert := assert.New(t)
 
-	_, err := NewCampaign(name, fake.Lorem().Text(1030), contacts, email)
+	_, err := NewCampaign(name, content, contacts, "invalidemail")
 
 	assert.NotNil(err)
 	assert.Contains(err.Error(), "CreatedBy")

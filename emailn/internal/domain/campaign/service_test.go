@@ -55,7 +55,7 @@ func Test_CreateCampaign(t *testing.T) {
 	repositoryService := NewService(repositoryMock)
 
 	repositoryMock.On("Save", mock.MatchedBy(func(campaign *Campaign) bool {
-		if campaign.Name != newCampaign.Name || campaign.Content != newCampaign.Content || (*campaign.Contacts)[0].Email != newCampaign.Emails[0] {
+		if campaign.Name != newCampaign.Name || campaign.Content != newCampaign.Content || (*campaign.Contacts)[0].Email != newCampaign.Emails[0] || campaign.CreatedBy != "user@email.com" {
 			return false
 		}
 

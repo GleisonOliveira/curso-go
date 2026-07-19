@@ -2,6 +2,7 @@ package campaign
 
 import (
 	"emailn/cmd/api/handlers"
+	"emailn/internal/domain/auth"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -19,8 +20,9 @@ func NewCampaignHandler(service ServiceInterface) *Handler {
 
 func (h *Handler) HandleCreate(c *gin.Context) *handlers.ResponseConfig[*CampaignResponse] {
 	campaign := c.MustGet("data").(CreateCampaignRequest)
+	clains := c.MustGet("Claims").(*auth.Claims)
 
-	createdCampaign, err := h.service.Create(&campaign)
+	createdCampaign, err := h.service.Create(&campaign, clains.Email)
 
 	return &handlers.ResponseConfig[*CampaignResponse]{
 		SuccessStatus: http.StatusCreated,
